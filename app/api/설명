@@ -1,0 +1,63 @@
+summoner/route.ts
+이 폴더는 소환사 기본 정보 조회 및 DB 저장 역할
+1. gameName + tagLine 받기
+2. Riot API → PUUID 조회
+3. Riot API → 소환사 상세정보 조회
+   (레벨, 프로필 아이콘 등)
+4. Riot API → 랭크 정보 조회
+5. summoners 테이블에 저장
+6. ranked_info 테이블에 저장
+7. 프론트에 결과 반환
+사용시점 : 소환사 검색할 때 제일 먼저 호출
+
+matches/route.ts
+소환사의 최근 게임 기록 수집 및 DB 저장 역할
+1. puuid 받기
+2. Riot API → 최근 매치 ID 목록 조회 (최대 50개)
+3. 각 매치 ID로 상세 정보 조회
+   (킬/데스/어시스트, 챔피언, 아이템 등)
+4. matches 테이블에 저장
+5. match_participants 테이블에 저장
+   (10명 참가자 전원 데이터)
+6. champion_stats 테이블 자동 업데이트
+7. 프론트에 매치 목록 반환
+사용시점 : 소환사 검색 후 두 번째로 호출(분석 전에 반드시 먼저 호출)
+
+analyze/route.ts
+매치 데이터 기반으로 게이머 유형 분석
+1. puuid 받기
+2. Riot API → 최근 20경기 매치 수집
+3. lib/riot.ts의 calcScores 함수로
+   5가지 점수 계산
+   - 전략: 비전스코어 + 어시스트
+   - 반응: 킬 + CC 기여시간
+   - 팀플: 어시스트 + 비전스코어
+   - 창의: 펜타킬 + 킬링스프리
+   - 적응: CS + 골드 + KDA
+4. determineType 함수로 유형 결정
+   (5개 중 가장 높은 점수 = 유형)
+5. analysis_results 테이블에 저장
+6. 유형 결과 프론트에 반환
+사용시점 : 매치 수집후 세 번째로 호출
+
+champions/route.ts
+소환사가 가장 많이 플레이한 챔피언 통계
+1. summonerId 받기
+2. DB에서 champion_stats 조회
+3. 챔피언별 통계 계산
+   - 플레이 횟수
+   - 승률
+   - 평균 킬/데스/어시스트
+   - 평균 KDA
+4. 프론트에 반환
+사용시점 : 매치 수집후 언제든지 조회 가능(matches 호출하면 자동으로 쌓임)
+
+ranked/route.ts
+소환사의 솔랭/자랭 정보 조회
+1. summonerId + riotSummonerId 받기
+2. Riot API → 최신 랭크 정보 조회
+   - 솔로랭크 (RANKED_SOLO_5x5)
+   - 자유랭크 (RANKED_FLEX_SR)
+3. ranked_info 테이블 업데이트
+4. 티어/LP/승패/승률 반환
+사용시점 : 랭크 정보 최신화가 필요할떄
