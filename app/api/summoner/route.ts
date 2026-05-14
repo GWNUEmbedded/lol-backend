@@ -40,11 +40,11 @@ export async function GET(req: NextRequest) {
      updated_at      = CURRENT_TIMESTAMP`,
         [
           account.puuid,
-          "",              // ← summoner.id 대신 빈값
-          "",              // ← summoner.accountId 대신 빈값
+          "",              
+          "",              
           gameName,
           tagLine,
-          gameName,        // ← summoner.name 대신 gameName
+          gameName,        
           summoner.profileIconId,
           summoner.summonerLevel,
           region,
